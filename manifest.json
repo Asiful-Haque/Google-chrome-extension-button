@@ -1,0 +1,20 @@
+{
+    "manifest_version": 3,
+    "name": "GitHub Issue Button Extension",
+    "version": "1.0",
+    "description": "Adds a button to GitHub's issue page.",
+    "permissions": ["activeTab", "scripting"],
+    "host_permissions": ["https://github.com/*/*/issues/new"],
+    "content_scripts": [
+        {
+            "matches": ["https://github.com/*/*/issues/new"],
+            "js": ["content.js"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["content.html", "style.css"],  
+            "matches": ["<all_urls>"]
+        }
+    ]
+}
