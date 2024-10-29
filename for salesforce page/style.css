@@ -1,0 +1,39 @@
+/* Sidebar-style modal */
+.modal-overlay {
+    position: fixed;
+    top: 303px;
+    right: 20px;
+    width: 1000px;
+    height: 500px;
+    background-color: rgb(231, 88, 88);
+    border-left: 1px solid #ddd;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    border-radius: 10px;
+    overflow-y: auto;
+}
+
+.modal-content {
+    width: 100%;
+    font-size: 15px;
+    font-family: sans-serif;
+}
+
+.close-btn {
+    background: #732996;
+    color: rgb(0, 0, 0);
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-top: 10px;
+}
+
+/* When the modal is visible, slide it into view */
+.modal-visible {
+    right: 0; /* Bring the sidebar into view */
+}
