@@ -1,0 +1,24 @@
+{
+    "manifest_version": 3,
+    "name": "Text Capture Button for Salesforce",
+    "version": "1.0",
+    "description": "Adds a capture text button on the Salesforce email template editor page.",
+    "permissions": ["storage"],
+    "host_permissions": [
+        "https://twinforcesolutions-3e-dev-ed.develop.my.salesforce.com/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://twinforcesolutions-3e-dev-ed.develop.my.salesforce.com/p/email/template/EmailTemplateEditorUi/e*"
+            ],
+            "js": ["content.js"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["content.html", "style.css"],
+            "matches": ["<all_urls>"]
+        }
+    ]
+}
