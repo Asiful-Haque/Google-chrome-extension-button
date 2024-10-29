@@ -1,0 +1,207 @@
+content.js
+const targetTextAreaId = "issue_body";
+
+function addButtonToTextArea() {
+    const textArea = document.getElementById(targetTextAreaId);
+
+    if (textArea && !document.getElementById("captureButton")) {
+        console.log("Text area found, adding button.");
+
+        const button = document.createElement("button");
+        button.id = "captureButton";
+        button.textContent = "Capture Text";
+        button.type = "button"; // Ensure the button type is set to "button"
+
+        // Style the button to appear at the top-right corner of the textarea container
+        button.style.position = "absolute";
+        button.style.backgroundColor = "#4CAF50";
+        button.style.color = "white";
+        button.style.border = "none";
+        button.style.padding = "5px 10px";
+        button.style.cursor = "pointer";
+        button.style.borderRadius = "3px";
+        button.style.fontSize = "12px";
+        button.style.zIndex = "1000";
+
+        // Position the button in the top-right corner of the textarea’s container
+        const container = textArea.parentElement;
+        container.style.position = "relative"; // Ensure container positioning
+        button.style.top = "5px";
+        button.style.right = "5px";
+
+        // Append the button to the container
+        container.appendChild(button);
+
+        // Log textarea content on button click
+        button.addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent default behavior if it's inside a form
+            const content = textArea.value;
+            localStorage.setItem('capturedContent', content);
+            console.log("Textarea content saved:", content);
+
+            // Load the modal HTML
+            loadModal();
+        });
+    }
+}
+
+function loadModal() {
+    // Check if modal already exists
+    if (document.getElementById("modalContainer")) {
+        console.log("Modal already loaded.");
+        return;
+    }
+
+    // Load the CSS file
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = chrome.runtime.getURL('style.css');
+
+    // Fetch and load modal content from `content.html`
+    fetch(chrome.runtime.getURL('content.html'))
+        .then(response => response.text())
+        .then(data => {
+            // Create modal container
+            const modalContainer = document.createElement('div');
+            modalContainer.id = "modalContainer";
+
+            // Set the inner HTML to the fetched content
+            modalContainer.innerHTML = data;
+
+            // Style to position the modal to the right of the textarea
+            const textArea = document.getElementById(targetTextAreaId);
+            const textAreaRect = textArea.getBoundingClientRect();
+            modalContainer.style.position = "absolute";
+            modalContainer.style.top = `${textAreaRect.top}px`;
+            modalContainer.style.left = `${textAreaRect.right + 10}px`;
+
+            // Append modal and link to the DOM
+            document.body.appendChild(modalContainer);
+            document.head.appendChild(link);
+
+            // Retrieve and display the captured text
+            const content = localStorage.getItem('capturedContent');
+            const displayContent = modalContainer.querySelector('#displayContent');
+            if (displayContent) {
+                displayContent.textContent = content;
+            }
+
+            // Attach event listener to close button
+            const closeModalButton = modalContainer.querySelector('#closeModalButton');
+            closeModalButton.addEventListener('click', () => {
+                closeModal(modalContainer);
+            });
+        })
+        .catch(error => console.error("Error loading modal:", error));
+}
+
+function closeModal(modalContainer) {
+    modalContainer.style.display = "none";
+    modalContainer.remove(); // Cleanly remove modal for next time
+}
+
+
+
+// function closeModal(modalContainer) {
+//     modalContainer.style.display = "none"; 
+//     modalContainer.remove(); 
+// }
+
+// Use an interval to repeatedly check for the textarea
+const checkInterval = setInterval(() => {
+    addButtonToTextArea();
+}, 500); // Check every 500ms
+
+// Clear the interval once the textarea is detected and button is added
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById(targetTextAreaId)) {
+        clearInterval(checkInterval);
+    }
+});
+
+
+
+
+
+manifest.json
+
+{
+    "manifest_version": 3,
+    "name": "GitHub Issue Button Extension",
+    "version": "1.0",
+    "description": "Adds a button to GitHub's issue textarea.",
+    "permissions": ["activeTab", "scripting"],
+    "host_permissions": ["https://github.com/*/*/issues/new"],
+    "content_scripts": [
+        {
+            "matches": ["https://github.com/*/*/issues/new"],
+            "js": ["content.js"]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["content.html", "style.css"],  
+            "matches": ["<all_urls>"]
+        }
+    ]
+}
+
+
+
+
+
+<!-- content.html -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+        <h2>Captured Text</h2>
+        <pre id="displayContent"></pre>
+        <button class="close-btn" id="closeModalButton">Close</button>
+    </div>
+</div>
+<script>
+    document.getElementById('modalStylesheet').href = chrome.runtime.getURL('style.css');
+</script>
+
+
+
+
+
+style.css
+
+/* Sidebar-style modal */
+.modal-overlay {
+    position: absolute; /* Change from fixed to absolute */
+    top: 0;
+    right: -400px; /* Position it to the right, out of view initially */
+    width: 400px;
+    height: 500px; /* Set a fixed width for the sidebar */
+    background-color: rgb(231, 88, 88);
+    border-left: 1px solid #ddd;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    transition: right 0.3s ease; /* Smooth slide-in animation */
+    z-index: 1000;
+}
+
+.modal-content {
+    width: 100%;
+}
+
+.close-btn {
+    background-color: #732996;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-top: 10px;
+}
+
+/* When the modal is visible, slide it into view */
+.modal-visible {
+    right: 0; /* Bring the sidebar into view */
+}
+
